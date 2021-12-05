@@ -25,10 +25,11 @@ public class Runner<TEntry, TResult>
 	private readonly Func<string, TEntry>? _lineParser;
 
 	private readonly IAsyncSolver<TEntry, TResult> _solver;
-	
+
 	private readonly IRawInputObserver[] _rawInputObservers;
 	private readonly IInputObserver<TEntry>[] _inputObservers;
 	private readonly IResultObserver<TResult>[] _resultObservers;
+	private readonly Func<ValueTask>[] _afterRunHandlers;
 
 
 	public Runner(
@@ -37,7 +38,9 @@ public class Runner<TEntry, TResult>
 		IAsyncSolver<TEntry, TResult> solver,
 		IEnumerable<IRawInputObserver> rawInputObservers,
 		IEnumerable<IInputObserver<TEntry>> inputObservers,
-		IEnumerable<IResultObserver<TResult>> resultObservers)
+		IEnumerable<IResultObserver<TResult>> resultObservers,
+		IEnumerable<Func<ValueTask>> afterRunHandlers
+		)
 	{
 		_inputLines = inputLines;
 		_lineParser = lineParser;
@@ -45,6 +48,7 @@ public class Runner<TEntry, TResult>
 		_rawInputObservers = rawInputObservers.AsArray();
 		_inputObservers = inputObservers.AsArray();
 		_resultObservers = resultObservers.AsArray();
+		_afterRunHandlers = afterRunHandlers.AsArray();
 	}
 
 	public Runner(
@@ -52,20 +56,23 @@ public class Runner<TEntry, TResult>
 		IAsyncSolver<TEntry, TResult> solver,
 		IEnumerable<IRawInputObserver> rawInputObservers,
 		IEnumerable<IInputObserver<TEntry>> inputObservers,
-		IEnumerable<IResultObserver<TResult>> resultObservers)
+		IEnumerable<IResultObserver<TResult>> resultObservers,
+		IEnumerable<Func<ValueTask>> afterRunHandlers
+		)
 	{
 		_inputEntries = inputEntries;
 		_solver = solver;
 		_rawInputObservers = rawInputObservers.AsArray();
 		_inputObservers = inputObservers.AsArray();
 		_resultObservers = resultObservers.AsArray();
-		
+		_afterRunHandlers = afterRunHandlers.AsArray();
 	}
 
 	public async ValueTask Run()
 	{
 		TResult result = await _solver.Solve(_inputEntries ?? parseInput());
 		await ObserveResult(result);
+		await HandleAfterRun();
 
 		async IAsyncEnumerable<TEntry> parseInput()
 		{
@@ -111,6 +118,14 @@ public class Runner<TEntry, TResult>
 		foreach (IResultObserver<TResult> observer in _resultObservers)
 		{
 			await observer.Observe(result);
+		}
+	}
+
+	private async ValueTask HandleAfterRun()
+	{
+		foreach (Func<ValueTask> handler in _afterRunHandlers)
+		{
+			await handler.Invoke();
 		}
 	}
 }

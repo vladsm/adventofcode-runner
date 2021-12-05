@@ -20,7 +20,7 @@ public static class AdventOfCode
 
 
 	public interface IInputBuilder<TEntry, out TResult>
-	{
+	{ 
 		IObserversBuilder<TEntry, TResult> WithInput(IAsyncEnumerable<TEntry> input);
 		IRawInputBuilder<TEntry, TResult> WithInput(IAsyncEnumerable<string> input);
 	}
@@ -28,19 +28,20 @@ public static class AdventOfCode
 
 	public interface IRawInputBuilder<TEntry, out TResult>
 	{
-		IObserversBuilder<TEntry, TResult> ParsingBy(Func<string, TEntry> lineParser);
+		IObserversBuilder<TEntry, TResult> ParsingInputWith(Func<string, TEntry> lineParser);
 	}
 
 
-	public interface IObserversBuilder<out TEntry, out TResult> : IRunnerLauncher
+	public interface IObserversBuilder<out TEntry, out TResult> : IRunLauncher
 	{
 		IObserversBuilder<TEntry, TResult> ObservingRawInputWith(IRawInputObserver inputObserver);
 		IObserversBuilder<TEntry, TResult> ObservingInputWith(IInputObserver<TEntry> inputObserver);
 		IObserversBuilder<TEntry, TResult> ObservingResultWith(IResultObserver<TResult> resultObserver);
+		IObserversBuilder<TEntry, TResult> AfterRun(Func<ValueTask> action);
 	}
 
 
-	public interface IRunnerLauncher
+	public interface IRunLauncher
 	{
 		ValueTask Run();
 	}
@@ -58,6 +59,7 @@ public static class AdventOfCode
 		private readonly List<IRawInputObserver> _rawInputObservers = new();
 		private readonly List<IInputObserver<TEntry>> _inputObservers = new();
 		private readonly List<IResultObserver<TResult>> _resultObservers = new();
+		private readonly List<Func<ValueTask>> _afterRunHandlers = new();
 
 
 		public void SetSolver(IAsyncSolver<TEntry, TResult> solver)
@@ -81,7 +83,7 @@ public static class AdventOfCode
 			return this;
 		}
 
-		IObserversBuilder<TEntry, TResult> IRawInputBuilder<TEntry, TResult>.ParsingBy(
+		IObserversBuilder<TEntry, TResult> IRawInputBuilder<TEntry, TResult>.ParsingInputWith(
 			Func<string, TEntry> lineParser
 			)
 		{
@@ -113,7 +115,15 @@ public static class AdventOfCode
 			return this;
 		}
 
-		async ValueTask IRunnerLauncher.Run()
+		IObserversBuilder<TEntry, TResult> IObserversBuilder<TEntry, TResult>.AfterRun(
+			Func<ValueTask> action
+			)
+		{
+			_afterRunHandlers.Add(action);
+			return this;
+		}
+
+		async ValueTask IRunLauncher.Run()
 		{
 			Runner<TEntry, TResult> runner = Build();
 			await runner.Run();
@@ -128,7 +138,14 @@ public static class AdventOfCode
 
 			if (_inputEntries is not null)
 			{
-				return new Runner<TEntry, TResult>(_inputEntries, _solver, _rawInputObservers, _inputObservers, _resultObservers);
+				return new Runner<TEntry, TResult>(
+					_inputEntries,
+					_solver,
+					_rawInputObservers,
+					_inputObservers,
+					_resultObservers,
+					_afterRunHandlers
+					);
 			}
 
 			if (_inputLines is null)
@@ -144,7 +161,15 @@ public static class AdventOfCode
 					);
 			}
 
-			return new Runner<TEntry, TResult>(_inputLines, _lineParser, _solver, _rawInputObservers, _inputObservers, _resultObservers);
+			return new Runner<TEntry, TResult>(
+				_inputLines,
+				_lineParser,
+				_solver,
+				_rawInputObservers,
+				_inputObservers,
+				_resultObservers,
+				_afterRunHandlers
+				);
 		}
 	}
 }
