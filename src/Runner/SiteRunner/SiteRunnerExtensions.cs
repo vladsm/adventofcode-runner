@@ -80,6 +80,14 @@ public static class SiteRunnerExtensions
 
 	public static AdventOfCode.IRawInputBuilder<TEntry, TResult> HandlingResultCorrectness<TEntry, TResult>(
 		this SiteRunner.IResultCorrectnessHandlerBuilder<TEntry, TResult> builder,
+		Action<bool> action
+		)
+	{
+		return builder.HandlingResultCorrectness((_, isCorrect) => action(isCorrect));
+	}
+
+	public static AdventOfCode.IRawInputBuilder<TEntry, TResult> HandlingResultCorrectness<TEntry, TResult>(
+		this SiteRunner.IResultCorrectnessHandlerBuilder<TEntry, TResult> builder,
 		Action<TResult, bool> action
 		)
 	{
