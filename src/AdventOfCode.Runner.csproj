@@ -8,13 +8,23 @@
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
+	<PropertyGroup>
+		<PackageId>AdventOfCode.Runner</PackageId>
+		<Version>1.0.0</Version>
+		<Authors>Vladimir Smirnov</Authors>
+		<Title>AdventOfCode.Runner</Title>
+		<Description>.NET solvers runner for the Advent of Code puzzles (https://adventofcode.com)</Description>
+		<RepositoryUrl>https://github.com/vladsm/adventofcode-runner</RepositoryUrl>
+		<PackageTags>advent-of-code</PackageTags>
+	</PropertyGroup>
+
 	<ItemGroup>
-	  <Compile Include=".properties\GlobalUsings.cs" />
+		<Compile Include=".properties\GlobalUsings.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
-	  <PackageReference Include="System.Linq.Async" Version="5.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
+		<PackageReference Include="System.Linq.Async" Version="5.0.0" />
 	</ItemGroup>
 
 </Project>
