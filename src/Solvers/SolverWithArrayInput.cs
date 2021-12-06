@@ -1,6 +1,6 @@
 ﻿namespace AdventOfCode;
 
-public abstract class SolverWithEnumerableInput<TEntry, TResult> : IAsyncSolver<TEntry, TResult>
+public abstract class SolverWithArrayInput<TEntry, TResult> : IAsyncSolver<TEntry, TResult>
 {
 	public async ValueTask<TResult> Solve(IAsyncEnumerable<TEntry> entries)
 	{
@@ -8,5 +8,5 @@ public abstract class SolverWithEnumerableInput<TEntry, TResult> : IAsyncSolver<
 		return Solve(entriesArray);
 	}
 
-	protected abstract TResult Solve(IEnumerable<TEntry> entries);
+	protected abstract TResult Solve(TEntry[] entries);
 }
