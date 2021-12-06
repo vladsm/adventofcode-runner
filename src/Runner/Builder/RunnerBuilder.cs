@@ -28,7 +28,7 @@ public static class AdventOfCode
 
 	public interface IRawInputBuilder<TEntry, out TResult>
 	{
-		IObserversBuilder<TEntry, TResult> ParsingInputWith(Func<string, TEntry> lineParser);
+		IObserversBuilder<TEntry, TResult> ParsingInputWith(Func<string, int, TEntry> lineParser);
 	}
 
 
@@ -55,7 +55,7 @@ public static class AdventOfCode
 		private IAsyncSolver<TEntry, TResult>? _solver;
 		private IAsyncEnumerable<TEntry>? _inputEntries;
 		private IAsyncEnumerable<string>? _inputLines;
-		private Func<string, TEntry>? _lineParser;
+		private Func<string, int, TEntry>? _lineParser;
 		private readonly List<IRawInputObserver> _rawInputObservers = new();
 		private readonly List<IInputObserver<TEntry>> _inputObservers = new();
 		private readonly List<IResultObserver<TResult>> _resultObservers = new();
@@ -84,7 +84,7 @@ public static class AdventOfCode
 		}
 
 		IObserversBuilder<TEntry, TResult> IRawInputBuilder<TEntry, TResult>.ParsingInputWith(
-			Func<string, TEntry> lineParser
+			Func<string, int, TEntry> lineParser
 			)
 		{
 			_lineParser = lineParser;

@@ -9,4 +9,12 @@ public static class RunnerBuilderInputExtensions
 	{
 		return inputBuilder.WithInput(input.ToAsyncEnumerable());
 	}
+	
+	public static AdventOfCode.IObserversBuilder<TEntry, TResult> ParsingInputWith<TEntry, TResult>(
+		this AdventOfCode.IRawInputBuilder<TEntry, TResult> inputBuilder,
+		Func<string, TEntry> lineParser
+		)
+	{
+		return inputBuilder.ParsingInputWith((line, _) => lineParser(line));
+	}
 }

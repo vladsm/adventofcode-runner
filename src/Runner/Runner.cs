@@ -22,7 +22,7 @@ public class Runner<TEntry, TResult>
 {
 	private readonly IAsyncEnumerable<TEntry>? _inputEntries;
 	private readonly IAsyncEnumerable<string>? _inputLines;
-	private readonly Func<string, TEntry>? _lineParser;
+	private readonly Func<string, int, TEntry>? _lineParser;
 
 	private readonly IAsyncSolver<TEntry, TResult> _solver;
 
@@ -34,7 +34,7 @@ public class Runner<TEntry, TResult>
 
 	public Runner(
 		IAsyncEnumerable<string> inputLines,
-		Func<string, TEntry> lineParser,
+		Func<string, int, TEntry> lineParser,
 		IAsyncSolver<TEntry, TResult> solver,
 		IEnumerable<IRawInputObserver> rawInputObservers,
 		IEnumerable<IInputObserver<TEntry>> inputObservers,
@@ -85,11 +85,12 @@ public class Runner<TEntry, TResult>
 				throw new InvalidOperationException("Input line parser is not provided");
 			}
 
+			int lineIndex = 0;
 			await foreach (string line in _inputLines)
 			{
 				await ObserveInput(line);
 
-				TEntry entry = _lineParser(line);
+				TEntry entry = _lineParser(line, lineIndex++);
 				await ObserveInput(line, entry);
 
 				yield return entry;

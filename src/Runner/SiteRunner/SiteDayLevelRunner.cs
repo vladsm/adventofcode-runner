@@ -72,7 +72,7 @@ internal sealed class SiteDayLevelRunner :
 		}
 
 		public AdventOfCode.IObserversBuilder<TEntry, TResult> ParsingInputWith(
-			Func<string, TEntry> lineParser
+			Func<string, int, TEntry> lineParser
 			)
 		{
 			return _rawInputBuilder.ParsingInputWith(lineParser);
@@ -129,7 +129,7 @@ internal sealed class SiteDayLevelRunner :
 			_rawInputBuilder = rawInputBuilder;
 		}
 
-		public AdventOfCode.IObserversBuilder<TEntry, TResult> ParsingInputWith(Func<string, TEntry> lineParser)
+		public AdventOfCode.IObserversBuilder<TEntry, TResult> ParsingInputWith(Func<string, int, TEntry> lineParser)
 		{
 			_observersBuilder = _rawInputBuilder.
 				ParsingInputWith(lineParser).
