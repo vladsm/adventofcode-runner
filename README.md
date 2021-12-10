@@ -194,4 +194,82 @@ public interface IInputObserver<in TEntry>
 }
 ```
 
-The observer will be called in an order they follow in the observers enumerable before they are passing to the solver. The raw input observers are called before each line parsing. 
+The observer will be called in an order they follow in the observers enumerable before the solver starts calculating. The raw input observers are called before each line parsing. 
+
+
+#### Result observers
+
+Result observer is called once the solver completes calculation. Observers will be called in an order they follow in the observers enumerable and will accept the result. 
+
+```c#
+IEnumerable<IResultObserver<TResult>> resultObservers
+
+public interface IResultObserver<in TResult>
+{
+	ValueTask Observe(TResult result);
+}
+```
+
+#### After-Run handlers
+
+To run something at the end of the processing one can use *after-run* handlers:
+
+```c#
+IEnumerable<Func<ValueTask>> afterRunHandlers
+```
+
+### Processing
+
+Method `Run` starts asynchronous process of the orchestrated services executing:
+
+```c#
+public class Runner<TEntry, TResult>
+{
+    public async ValueTask Run() {...}
+}
+```
+
+Providing the input services and observers one can create specific process of obtaining puzzle input and handling the calculated result.
+
+Here is the *lifecycle* of the the `Run` execution:
+
+```
+            OPTION 1                        OPTION 2
+______________________________     ______________________________
+
+------------------------------     ------------------------------
+| Asynchronously enumerating |     | Asynchronously enumerating |
+|          raw input         |     |         typed input        |
+------------------------------     ------------------------------
+              |                                    |
+-------------------------------                    |
+| Calling raw input observers |                    |
+-------------------------------                    |
+              |                                    |
+  ----------------------------                     |
+  | Parsing each line during |                     |
+  |     input enumerating    |                     |
+  ----------------------------                     |
+              |                                    |
+--------------------------------                   |
+| Calling typed input observer |                   |
+--------------------------------                   |
+              |____________________________________|
+                                |
+             -----------------------------------------
+             | Passing typed input enumerable to the |
+             |             solver.Solve()            |
+             -----------------------------------------
+                                |
+                  -----------------------------
+                  | Solver calculating result |
+                  -----------------------------
+                                |
+                   ----------------------------
+                   | Calling result observers |
+                   ----------------------------
+                                |
+                  ------------------------------
+                  | Calling after-run handlers |
+                  ------------------------------
+```
