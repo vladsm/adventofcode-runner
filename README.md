@@ -28,7 +28,12 @@ public async Task Verifies_that_the_puzzle_answer_is_correct()
 }
 ```
 
-## TODO: installation
+## Installation
+
+Add NuGet package **[AdventOfCode.Runner](https://www.nuget.org/packages/AdventOfCode.Runner)** to your project project:
+```
+dotnet add package AdventOfCode.Runner
+```
 
 ## Solver
 
@@ -87,9 +92,9 @@ public class SumSolver : IAsyncSolver<int, int>
 }
 ```
 
-## Runner concept
+## Solvers Runner concept
 
-The API is based on the concept of a runner represented by `AdventOfCode.Runner<TEntry, TResult>` type.
+The API is based on the concept of a solvers runner represented by `AdventOfCode.Runner<TEntry, TResult>` type.
 
 When created, the runner takes as input and encapsulates a number of services that are called as the runner is running. In this way, the runner can be considered as an orchestrator of the services passed to it.
 
@@ -273,3 +278,122 @@ ______________________________     ______________________________
                   | Calling after-run handlers |
                   ------------------------------
 ```
+
+## Runner Builder API
+
+To simplify *solver runner* creation and passing services to it there is a fluent API which guides you to build runner.
+
+Look at the following sample:
+
+```c#
+
+static IAsyncEnumerable<string> LoadInputLinesAsync()
+{
+    // loads input from somewhere...
+}
+
+...
+
+private class Year2021Day1Level1Solver : SolverWithArrayInput<int, long>
+{
+    protected override long Solve(int[] entries)
+    {
+        return entries.Sum();
+    }
+}
+
+...
+
+// Build runner and start it
+await AdventOfCode
+    .SolveUsing(new Year2021Day1Level1Solver())
+    .WithInput(LoadInputLinesAsync())
+    .ParsingInputWith(int.Parse)
+    .ObservingResultWith(result => Console.WriteLine($"Result: {result}"))
+    .Run();
+
+```
+
+The fluent API of the builder which is used here is self-explained. Methods of the builder have overrides to be convenient in different scenarios.
+
+Follow the auto-completion in your IDE to explore more building options. 
+
+
+## Automatic solution verification
+
+Normally to check your solution you have to deal with [adventofcode.com](https://adventofcode.com/):
+
+- first, to **load the input** to provide it to you solving code (most of the time solving code is copying into file and solving code reads from it),
+- second, to **submit your answer**.
+
+The library provides extensions of the runner and it's builder to do all these communications with the site automatically.
+
+To use it, you create the instance of the `SiteRunner` type and write the code similar to the following:
+
+```c#
+var siteRunner = new SiteRunner(...);
+
+await siteRunner
+    .Puzzle(2021, 1, level: 1)
+    .SolveUsing<int, int>(typeof(Day1Level1Resolver))
+    .HandlingResultCorrectness((result, isResultCorrect) =>
+            Console.WriteLine($"Your result {result} is{(isResultCorrect ? "" : " not")} correct"))
+    .ParsingInputWith(int.Parse)
+    .Run();
+```
+
+As you can expect there are overrides and extensions over the `SiteRunner` API.
+
+### Creating site runner instance
+
+To create the instance of the `SiteRunner` type you need to call it's constructor providing the following objects to it:
+
+- Instance of the `System.Net.Http.HttpClient`;
+- Site url (*adventofcode.com*);
+- Your personal session token to authorized runner calls to the site.
+
+```c#
+var siteRunner = new SiteRunner(
+    new HttpClient(),
+    new Uri("https://adventofcode.com"),
+    "<your session token>"
+    );
+```
+
+#### Session Token
+
+Session token is used to authorize you on [adventofcode.com](https://adventofcode.com) site.
+
+To get it:
+
+- login to the [adventofcode.com](https://adventofcode.com),
+- find it in the cookie under the key `session`
+
+```
+session=111222...999
+```
+
+Do not share your token!
+
+One of the way to keep it secret is to use .net secret manager (see, [Safe storage of app secrets in development in ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/security/app-secrets?view=aspnetcore-6.0&tabs=windows)).
+
+#### HttpClient
+
+Your can configure and create http client in any way that works for you.
+
+You can pre-configure your http client instance to set it's base address to the site url (`https://adventofcode.com`) and to set cookie with session token. In this case you don't need to pass url and session token to the `SiteRunner` constructor.
+
+#### Site Runner lifetime
+
+You can use single instance of the `SiteRunner` over your application.
+
+### Further extensions
+
+`SiteRunner` API can be easily extended to meet your needs.
+
+For example, have a look at the [vladsm/adventofcode-2021-dotnet](https://github.com/vladsm/adventofcode-2021-dotnet) repository where the solution is verifying with the *site runner* and makes unit test green or red ([PuzzlesTestsExtensions.cs](https://github.com/vladsm/adventofcode-2021-dotnet/blob/main/src/AdventOfCode2021.Runner/Helpers/PuzzlesTestsExtensions.cs)).
+
+---
+<br/>
+
+_**Happy solving!**_
