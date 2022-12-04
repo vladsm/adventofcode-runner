@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<RootNamespace>AdventOfCode</RootNamespace>
-		<TargetFrameworks>netstandard2.1</TargetFrameworks>
+		<TargetFramework>netstandard2.1</TargetFramework>
 		<LangVersion>10.0</LangVersion>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
@@ -10,7 +10,7 @@
 
 	<PropertyGroup>
 		<PackageId>AdventOfCode.Runner</PackageId>
-		<Version>1.0.2</Version>
+		<Version>1.0.3</Version>
 		<Authors>Vladimir Smirnov</Authors>
 		<Title>AdventOfCode.Runner</Title>
 		<Description>.NET solvers runner for the Advent of Code puzzles (https://adventofcode.com)</Description>
