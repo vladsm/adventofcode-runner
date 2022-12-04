@@ -21,7 +21,7 @@ public class SiteRunner
 		if (sessionToken is not null)
 		{
 			_httpClient.DefaultRequestHeaders.Add("cookie", "session=" + sessionToken);
-			_httpClient.DefaultRequestHeaders.UserAgent.ParseAdd($".NET (+via https://github.com/vladsm/adventofcode-runner by vladsm@gmail.com)");
+			_httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(".NET (+via https://github.com/vladsm/adventofcode-runner by vladsm@gmail.com)");
 		}
 		if (siteUri is not null)
 		{
